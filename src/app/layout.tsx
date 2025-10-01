@@ -3,16 +3,41 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
+import { getBandProfile } from "@/lib/content-loader";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Soft Mad Children | Official Website",
-  description: "Official website of Soft Mad Children - Creating music that moves souls and connects hearts",
-};
+// Generate metadata from band profile
+async function generateMetadata(): Promise<Metadata> {
+  try {
+    const profile = await getBandProfile();
+    return {
+      title: profile.seo?.metaTitle || `${profile.name} | Official Website`,
+      description: profile.seo?.metaDescription || `Official website of ${profile.name}`,
+      keywords: profile.seo?.keywords || [],
+      openGraph: {
+        title: profile.seo?.metaTitle || `${profile.name} | Official Website`,
+        description: profile.seo?.metaDescription || `Official website of ${profile.name}`,
+        images: profile.seo?.ogImage ? [profile.seo.ogImage] : [],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: profile.seo?.metaTitle || `${profile.name} | Official Website`,
+        description: profile.seo?.metaDescription || `Official website of ${profile.name}`,
+      },
+    };
+  } catch (error) {
+    return {
+      title: "Band Website",
+      description: "Official band website",
+    };
+  }
+}
+
+export const metadata = await generateMetadata();
 
 export default function RootLayout({
   children,
